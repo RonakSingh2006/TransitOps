@@ -40,21 +40,10 @@ export default function AuthPage() {
               "radial-gradient(60% 60% at 20% 15%, oklch(0.4 0.15 255 / 0.35), transparent), radial-gradient(50% 50% at 90% 90%, oklch(0.55 0.18 165 / 0.18), transparent)",
           }}
         />
-        <div className="relative z-10 flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-gem">
-              <polyline points="6 3 18 3 22 9 12 22 2 9" />
-              <polyline points="2 9 6 3 12 9" />
-              <polyline points="22 9 18 3 12 9" />
-              <line x1="12" y1="22" x2="12" y2="9" />
-              <line x1="2" y1="9" x2="22" y2="9" />
-            </svg>
-          </div>
-          <div>
-            <div className="text-xl font-black tracking-tight">TransitOps</div>
-            <div className="text-[11px] uppercase tracking-[0.18em] text-sidebar-foreground/60">
-              Smart Transport Operations Platform
-            </div>
+        <div className="relative z-10 flex flex-col items-start">
+          <img src="/logo.svg" alt="TransitOps" className="h-26" />
+          <div className="text-[11px] uppercase tracking-[0.18em] text-sidebar-foreground/60 mt-1">
+            Smart Transport Operations Platform
           </div>
         </div>
 
@@ -115,7 +104,7 @@ export default function AuthPage() {
             >
               <div className="space-y-1.5">
                 <Label htmlFor="email">Work email</Label>
-                <Input id="email" type="email" defaultValue="Raven.k@transitops.in" />
+                <Input id="email" type="email" defaultValue="ronaksingh201106@gmail.com" />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="pw">Password</Label>
