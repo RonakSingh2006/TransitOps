@@ -9,8 +9,9 @@ import { Route as maintenanceRoute } from "./routes/maintenance";
 import { Route as expensesRoute } from "./routes/expenses";
 import { Route as analyticsRoute } from "./routes/analytics";
 import { Route as settingsRoute } from "./routes/settings";
+import { Route as fleetRoute } from "./routes/fleet";
 
-const routeTree = rootRoute.addChildren([IndexRoute, dashboardRoute, driversRoute, tripsRoute, maintenanceRoute, expensesRoute, analyticsRoute, settingsRoute]);
+const routeTree = rootRoute.addChildren([IndexRoute, dashboardRoute, driversRoute, tripsRoute, maintenanceRoute, expensesRoute, analyticsRoute, settingsRoute, fleetRoute]);
 const router = createRouter({ routeTree });
 
 declare module "@tanstack/react-router" {
