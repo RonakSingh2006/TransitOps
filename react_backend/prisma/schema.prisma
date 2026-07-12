@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum VehicleStatus {
+  available
+  on_trip
+  in_shop
+  retired
+}
+
+enum TripStatus {
+  draft
+  dispatched
+  completed
+  cancelled
+}
+
+enum DriverStatus {
+  available
+  on_trip
+  off_duty
+  suspended
+}
+
+enum Role {
+  Fleet_Manager
+  Dispatcher
+  Safety_Officer
+  Financial_Analyst
+}
+
+model User {
+  id       String @id @default(cuid())
+  email    String @unique
+  password String
+  name     String
+  role     Role   @default(Fleet_Manager)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Vehicle {
+  id            String        @id @default(cuid())
+  registration  String        @unique
+  model         String
+  type          String        // Van, Truck, Mini
+  maxCapacity   String
+  odometer      String
+  acquisitionCost String
+  status        VehicleStatus @default(available)
+
+  trips       Trip[]
+  fuelEntries FuelEntry[]
+  expenses    Expense[]
+  maintenance Maintenance[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Driver {
+  id          String       @id @default(cuid())
+  name        String
+  licenseNo   String       @unique
+  category    String
+  licenseExpiry String
+  phone       String
+  tripRate    String       @default("0%")
+  safetyScore Float        @default(0.0)
+  safetyTone  String       @default("gray") // green, amber, gray
+  status      DriverStatus @default(available)
+
+  trips Trip[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Trip {
+  id              String     @id @default(cuid())
+  tripCode        String     @unique
+  sourceDepot     String
+  destinationHub  String
+  cargoWeight     Int?
+  plannedDistance Int?
+  finalOdometer   String?
+  fuelConsumed    String?
+  eta             String?
+  status          TripStatus @default(draft)
+
+  vehicleId String?
+  vehicle   Vehicle?  @relation(fields: [vehicleId], references: [id])
+  driverId  String?
+  driver    Driver?   @relation(fields: [driverId], references: [id])
+
+  expenses Expense[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FuelEntry {
+  id     String @id @default(cuid())
+  date   String
+  liters String
+  cost   String
+
+  vehicleId String
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Expense {
+  id         String @id @default(cuid())
+  toll       String @default("0")
+  misc       String @default("0")
+  maint      String @default("0")
+  total      String @default("0")
+
+  tripId    String
+  trip      Trip   @relation(fields: [tripId], references: [id])
+  vehicleId String
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Maintenance {
+  id          String  @id @default(cuid())
+  serviceType String
+  cost        String
+  date        String
+  status      String  @default("Active")
+
+  vehicleId String
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
