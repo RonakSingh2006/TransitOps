@@ -31,11 +31,13 @@ export default function AuthPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await api.post<{ token: string; user: { role: string } }>("/auth/login", { email, password });
+      const res = await api.post<{ token: string; user: { id: string; email: string; name: string; role: string } }>("/auth/login", { email, password });
       setToken(res.token);
+      // Store user info for header display
+      localStorage.setItem("userName", res.user.name);
+      localStorage.setItem("userEmail", res.user.email);
       // Map DB role (e.g. "Fleet_Manager") to UI role (e.g. "Fleet Manager")
       const dbRole = res.user.role.replace(/_/g, " ");
-      // Allow sign-in as any role — RBAC sidebar handles filtering. Store the user's actual role.
       setRole(selectedRole);
       navigate({ to: "/dashboard" });
     } catch (err: any) {

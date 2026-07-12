@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createRoute } from "@tanstack/react-router";
 import { Route as rootRoute } from "./SignIn";
 import { AppLayout, PageHeader } from "../components/app-layout";
@@ -33,6 +33,7 @@ import {
   TableRow,
 } from "../components/ui/table";
 import { Plus, Search } from "lucide-react";
+import { api } from "../lib/api/client";
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
@@ -41,39 +42,38 @@ export const Route = createRoute({
 });
 
 type Vehicle = {
-  reg: string;
+  id: string;
+  registration: string;
   model: string;
   type: string;
-  cap: string;
-  odo: string;
-  cost: string;
-  status: StatusKind;
+  maxCapacity: string;
+  odometer: string;
+  acquisitionCost: string;
+  status: string;
 };
 
-const INITIAL_ROWS: Vehicle[] = [
-  { reg: "GJ01AB4521", model: "VAN-05", type: "Van", cap: "500 kg", odo: "74,000", cost: "6,20,000", status: "available" },
-  { reg: "GJ01AB9981", model: "TRUCK-11", type: "Truck", cap: "5 Ton", odo: "1,82,000", cost: "24,50,000", status: "on-trip" },
-  { reg: "GJ01AB1120", model: "MINI-03", type: "Mini", cap: "1 Ton", odo: "66,000", cost: "4,10,000", status: "in-shop" },
-  { reg: "GJ01AB0008", model: "VAN-09", type: "Van", cap: "750 kg", odo: "2,41,900", cost: "5,90,000", status: "retired" },
-];
-
-const emptyForm: Vehicle = {
-  reg: "",
+const emptyForm = {
+  registration: "",
   model: "",
   type: "Van",
-  cap: "",
-  odo: "",
-  cost: "",
-  status: "available",
+  maxCapacity: "",
+  odometer: "",
+  acquisitionCost: "",
 };
 
 function FleetPage() {
-  const [rows, setRows] = useState<Vehicle[]>(INITIAL_ROWS);
+  const [rows, setRows] = useState<Vehicle[]>([]);
+  const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [form, setForm] = useState<Vehicle>({ ...emptyForm });
+  const [form, setForm] = useState(emptyForm);
+  const [saving, setSaving] = useState(false);
+
+  const load = () => api.get<Vehicle[]>("/vehicles").then(setRows);
+
+  useEffect(() => { load().catch(console.error).finally(() => setLoading(false)); }, []);
 
   const filtered = rows.filter((r) => {
     const matchType = typeFilter === "All" || r.type === typeFilter;
@@ -82,23 +82,40 @@ function FleetPage() {
       r.status === statusFilter.toLowerCase().replace(/\s+/g, "-");
     const matchSearch =
       !searchQuery ||
-      r.reg.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.registration.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.model.toLowerCase().includes(searchQuery.toLowerCase());
     return matchType && matchStatus && matchSearch;
   });
 
   const retiredCount = rows.filter((r) => r.status === "retired").length;
 
-  function handleAdd() {
-    setRows((prev) => [...prev, { ...form, reg: form.reg.toUpperCase() }]);
-    setDialogOpen(false);
-    setForm({ ...emptyForm });
+  async function handleAdd() {
+    if (!form.registration || !form.model || !form.maxCapacity || !form.odometer || !form.acquisitionCost) {
+      alert("Please fill in all fields");
+      return;
+    }
+    setSaving(true);
+    try {
+      await api.post("/vehicles", {
+        ...form,
+        registration: form.registration.toUpperCase(),
+      });
+      await load();
+      setDialogOpen(false);
+      setForm(emptyForm);
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   function handleOpenChange(open: boolean) {
     setDialogOpen(open);
-    if (!open) setForm({ ...emptyForm });
+    if (!open) setForm(emptyForm);
   }
+
+  if (loading) return <AppLayout><div className="p-8 text-muted-foreground">Loading fleet...</div></AppLayout>;
 
   return (
     <AppLayout>
@@ -171,15 +188,15 @@ function FleetPage() {
           </TableHeader>
           <TableBody>
             {filtered.map((r) => (
-              <TableRow key={r.reg}>
-                <TableCell className="font-mono font-semibold">{r.reg}</TableCell>
+              <TableRow key={r.id}>
+                <TableCell className="font-mono font-semibold">{r.registration}</TableCell>
                 <TableCell className="font-medium">{r.model}</TableCell>
                 <TableCell>{r.type}</TableCell>
-                <TableCell>{r.cap}</TableCell>
-                <TableCell className="tabular-nums">{r.odo}</TableCell>
-                <TableCell className="tabular-nums">{r.cost}</TableCell>
+                <TableCell>{r.maxCapacity}</TableCell>
+                <TableCell className="tabular-nums">{r.odometer}</TableCell>
+                <TableCell className="tabular-nums">{r.acquisitionCost}</TableCell>
                 <TableCell>
-                  <StatusPill status={r.status} />
+                  <StatusPill status={r.status as StatusKind} />
                 </TableCell>
               </TableRow>
             ))}
@@ -203,8 +220,8 @@ function FleetPage() {
               <Input
                 id="reg"
                 placeholder="GJ01AB9999"
-                value={form.reg}
-                onChange={(e) => setForm({ ...form, reg: e.target.value })}
+                value={form.registration}
+                onChange={(e) => setForm({ ...form, registration: e.target.value })}
               />
             </div>
             <div className="space-y-2">
@@ -237,8 +254,8 @@ function FleetPage() {
               <Input
                 id="cap"
                 placeholder="500 kg"
-                value={form.cap}
-                onChange={(e) => setForm({ ...form, cap: e.target.value })}
+                value={form.maxCapacity}
+                onChange={(e) => setForm({ ...form, maxCapacity: e.target.value })}
               />
             </div>
             <div className="space-y-2">
@@ -246,8 +263,8 @@ function FleetPage() {
               <Input
                 id="odo"
                 placeholder="0"
-                value={form.odo}
-                onChange={(e) => setForm({ ...form, odo: e.target.value })}
+                value={form.odometer}
+                onChange={(e) => setForm({ ...form, odometer: e.target.value })}
               />
             </div>
             <div className="space-y-2">
@@ -255,26 +272,9 @@ function FleetPage() {
               <Input
                 id="cost"
                 placeholder="0"
-                value={form.cost}
-                onChange={(e) => setForm({ ...form, cost: e.target.value })}
+                value={form.acquisitionCost}
+                onChange={(e) => setForm({ ...form, acquisitionCost: e.target.value })}
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select
-                value={form.status}
-                onValueChange={(v) => setForm({ ...form, status: v as StatusKind })}
-              >
-                <SelectTrigger id="status">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="available">Available</SelectItem>
-                  <SelectItem value="on-trip">On Trip</SelectItem>
-                  <SelectItem value="in-shop">In Shop</SelectItem>
-                  <SelectItem value="retired">Retired</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
 
@@ -282,7 +282,9 @@ function FleetPage() {
             <Button variant="outline" onClick={() => handleOpenChange(false)}>
               Cancel
             </Button>
-            <Button onClick={handleAdd}>Add Vehicle</Button>
+            <Button onClick={handleAdd} disabled={saving}>
+              {saving ? "Saving..." : "Add Vehicle"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

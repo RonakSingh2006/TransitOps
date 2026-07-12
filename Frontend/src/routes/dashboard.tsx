@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createRoute } from "@tanstack/react-router";
 import { Route as rootRoute } from "./SignIn";
 import { AppLayout, PageHeader } from "../components/app-layout";
@@ -24,6 +24,7 @@ import {
 import { StatusPill, type StatusKind } from "../components/status-pill";
 import { cn } from "../lib/utils";
 import { Search } from "lucide-react";
+import { api } from "../lib/api/client";
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
@@ -31,55 +32,62 @@ export const Route = createRoute({
   component: DashboardPage,
 });
 
-type Trip = {
-  id: string;
-  vehicle: string;
-  driver: string;
-  status: StatusKind;
-  eta: string;
-  vehicleType: string;
-  region: string;
-};
+interface DashboardStats {
+  kpis: { label: string; value: string; accent: string }[];
+  fleetUtilization: number;
+  totalAssets: number;
+  fleetDistribution: { label: string; pct: number; cls: string }[];
+}
 
-const TRIPS: Trip[] = [
-  { id: "TR001", vehicle: "VAN-05", driver: "Alex", status: "on-trip", eta: "45 min", vehicleType: "Van", region: "East" },
-  { id: "TR002", vehicle: "TRK-12", driver: "John", status: "completed", eta: "—", vehicleType: "Truck", region: "West" },
-  { id: "TR003", vehicle: "MINI-08", driver: "Priya", status: "dispatched", eta: "1h 10m", vehicleType: "Mini", region: "North" },
-  { id: "TR004", vehicle: "—", driver: "—", status: "draft", eta: "Awaiting vehicle", vehicleType: "Van", region: "East" },
-];
+interface Trip {
+  id: string;
+  tripCode: string;
+  vehicle?: { model: string } | null;
+  driver?: { name: string } | null;
+  status: string;
+  eta?: string | null;
+  sourceDepot: string;
+  destinationHub: string;
+}
 
 function DashboardPage() {
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [regionFilter, setRegionFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredTrips = TRIPS.filter((t) => {
-    const matchType = typeFilter === "All" || t.vehicleType === typeFilter;
+  useEffect(() => {
+    Promise.all([
+      api.get<DashboardStats>("/dashboard/stats"),
+      api.get<Trip[]>("/trips"),
+    ]).then(([s, t]) => {
+      setStats(s);
+      setTrips(t);
+    }).catch(console.error).finally(() => setLoading(false));
+  }, []);
+
+  const filteredTrips = trips.filter((t) => {
     const matchStatus =
       statusFilter === "All" ||
       t.status === statusFilter.toLowerCase().replace(/\s+/g, "-");
-    const matchRegion = regionFilter === "All" || t.region === regionFilter;
     const matchSearch =
       !searchQuery ||
-      t.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.vehicle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.driver.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchType && matchStatus && matchRegion && matchSearch;
+      t.tripCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (t.vehicle?.model ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (t.driver?.name ?? "").toLowerCase().includes(searchQuery.toLowerCase());
+    return matchStatus && matchSearch;
   });
 
   const activeTrips = filteredTrips.filter(
-    (t) => t.status === "on-trip" || t.status === "dispatched"
+    (t) => t.status === "dispatched"
   ).length;
   const pendingTrips = filteredTrips.filter((t) => t.status === "draft").length;
   const completedTrips = filteredTrips.filter((t) => t.status === "completed").length;
 
-  const fleetDist = [
-    { label: "Available", pct: 60, cls: "bg-status-available" },
-    { label: "On Trip", pct: 30, cls: "bg-status-active" },
-    { label: "In Shop", pct: 8, cls: "bg-status-warning" },
-    { label: "Retired", pct: 2, cls: "bg-status-danger/60" },
-  ];
+  if (loading) return <AppLayout><div className="p-8 text-muted-foreground">Loading dashboard...</div></AppLayout>;
 
   return (
     <AppLayout>
@@ -93,47 +101,23 @@ function DashboardPage() {
           Filters
         </span>
 
-        <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="w-44 h-9">
-            <SelectValue placeholder="Vehicle Type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="All">Vehicle Type: All</SelectItem>
-            <SelectItem value="Van">Vehicle Type: Van</SelectItem>
-            <SelectItem value="Truck">Vehicle Type: Truck</SelectItem>
-            <SelectItem value="Mini">Vehicle Type: Mini</SelectItem>
-          </SelectContent>
-        </Select>
-
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-44 h-9">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="All">Status: All</SelectItem>
-            <SelectItem value="On Trip">Status: On Trip</SelectItem>
-            <SelectItem value="Completed">Status: Completed</SelectItem>
             <SelectItem value="Dispatched">Status: Dispatched</SelectItem>
+            <SelectItem value="Completed">Status: Completed</SelectItem>
             <SelectItem value="Draft">Status: Draft</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select value={regionFilter} onValueChange={setRegionFilter}>
-          <SelectTrigger className="w-44 h-9">
-            <SelectValue placeholder="Region" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="All">Region: All</SelectItem>
-            <SelectItem value="East">Region: East</SelectItem>
-            <SelectItem value="West">Region: West</SelectItem>
-            <SelectItem value="North">Region: North</SelectItem>
+            <SelectItem value="Cancelled">Status: Cancelled</SelectItem>
           </SelectContent>
         </Select>
 
         <div className="relative flex-1 min-w-48">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search trips by ID, vehicle, driver…"
+            placeholder="Search trips by code, vehicle, driver…"
             className="pl-9 h-9"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -142,48 +126,21 @@ function DashboardPage() {
       </Card>
 
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
-        <Card className="p-4 relative overflow-hidden">
-          <div className="absolute left-0 top-0 bottom-0 w-1 bg-status-active" />
-          <div className="pl-2">
-            <div className="text-2xl font-black tracking-tight">{activeTrips}</div>
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-1 leading-tight">
-              Active Trips
+        {stats?.kpis.map((k) => (
+          <Card key={k.label} className="p-4 relative overflow-hidden">
+            <div className={cn("absolute left-0 top-0 bottom-0 w-1", k.accent)} />
+            <div className="pl-2">
+              <div className="text-2xl font-black tracking-tight">{k.value}</div>
+              <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-1 leading-tight">{k.label}</div>
             </div>
-          </div>
-        </Card>
-        <Card className="p-4 relative overflow-hidden">
-          <div className="absolute left-0 top-0 bottom-0 w-1 bg-status-available" />
-          <div className="pl-2">
-            <div className="text-2xl font-black tracking-tight">{completedTrips}</div>
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-1 leading-tight">
-              Completed Trips
-            </div>
-          </div>
-        </Card>
-        <Card className="p-4 relative overflow-hidden">
-          <div className="absolute left-0 top-0 bottom-0 w-1 bg-status-neutral" />
-          <div className="pl-2">
-            <div className="text-2xl font-black tracking-tight">{pendingTrips}</div>
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-1 leading-tight">
-              Pending Trips
-            </div>
-          </div>
-        </Card>
-        <Card className="p-4 relative overflow-hidden">
-          <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
-          <div className="pl-2">
-            <div className="text-2xl font-black tracking-tight">26</div>
-            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-1 leading-tight">
-              Drivers On Duty
-            </div>
-          </div>
-        </Card>
+          </Card>
+        ))}
         <Card className="p-4 relative overflow-hidden col-span-2 md:col-span-1">
           <div className="pl-1">
-            <div className="text-2xl font-black tracking-tight">60%</div>
+            <div className="text-2xl font-black tracking-tight">{stats?.fleetUtilization ?? 0}%</div>
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-1">Fleet Utilization</div>
             <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden">
-              <div className="h-full bg-status-available" style={{ width: "60%" }} />
+              <div className="h-full bg-status-available" style={{ width: `${stats?.fleetUtilization ?? 0}%` }} />
             </div>
           </div>
         </Card>
@@ -196,7 +153,7 @@ function DashboardPage() {
               <h3 className="font-semibold">Recent Trips</h3>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {filteredTrips.length} trip{filteredTrips.length !== 1 ? "s" : ""} found
-                {filteredTrips.length !== TRIPS.length && ` (filtered from ${TRIPS.length})`}
+                {filteredTrips.length !== trips.length && ` (filtered from ${trips.length})`}
               </p>
             </div>
             <span className="text-xs text-muted-foreground">Updated just now</span>
@@ -204,7 +161,7 @@ function DashboardPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Trip ID</TableHead>
+                <TableHead>Trip Code</TableHead>
                 <TableHead>Vehicle</TableHead>
                 <TableHead>Driver</TableHead>
                 <TableHead>Status</TableHead>
@@ -221,13 +178,13 @@ function DashboardPage() {
               ) : (
                 filteredTrips.map((t) => (
                   <TableRow key={t.id}>
-                    <TableCell className="font-mono font-semibold">{t.id}</TableCell>
-                    <TableCell>{t.vehicle}</TableCell>
-                    <TableCell>{t.driver}</TableCell>
+                    <TableCell className="font-mono font-semibold">{t.tripCode}</TableCell>
+                    <TableCell>{t.vehicle?.model ?? "—"}</TableCell>
+                    <TableCell>{t.driver?.name ?? "—"}</TableCell>
                     <TableCell>
-                      <StatusPill status={t.status} />
+                      <StatusPill status={t.status as StatusKind} />
                     </TableCell>
-                    <TableCell className="text-right">{t.eta}</TableCell>
+                    <TableCell className="text-right">{t.eta ?? "—"}</TableCell>
                   </TableRow>
                 ))
               )}
@@ -239,7 +196,7 @@ function DashboardPage() {
           <h3 className="font-semibold">Fleet Distribution</h3>
           <p className="text-xs text-muted-foreground mt-0.5">Live asset utilization breakdown</p>
           <div className="mt-6 space-y-5">
-            {fleetDist.map((r) => (
+            {(stats?.fleetDistribution ?? []).map((r) => (
               <div key={r.label}>
                 <div className="flex justify-between text-sm mb-1.5">
                   <span className="font-medium">{r.label}</span>
@@ -252,7 +209,7 @@ function DashboardPage() {
             ))}
           </div>
           <div className="mt-6 pt-5 border-t text-xs text-muted-foreground">
-            Total assets tracked <span className="font-semibold text-foreground">42</span> · Depot GJ4
+            Total assets tracked <span className="font-semibold text-foreground">{stats?.totalAssets ?? 0}</span> · Depot GJ4
           </div>
         </Card>
       </div>

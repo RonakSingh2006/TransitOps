@@ -39,10 +39,21 @@ const NAV = [
   { to: "/settings", label: "Settings", icon: Settings, module: "settings" as const },
 ];
 
+function getInitials(name: string): string {
+  return name
+    .split(/[\s.]+/)
+    .filter(Boolean)
+    .map((s) => s[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
 export function AppLayout({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { role, setRole, canAccess } = useRole();
   const { theme, toggle } = useTheme();
+  const userName = typeof window !== "undefined" ? localStorage.getItem("userName") ?? "User" : "User";
 
   return (
     <div className="flex min-h-screen w-full bg-background">
@@ -112,11 +123,11 @@ export function AppLayout({ children }: { children: ReactNode }) {
               <DropdownMenuTrigger className="flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
                 <Avatar className="h-7 w-7">
                   <AvatarFallback className="bg-primary text-primary-foreground text-[11px] font-semibold">
-                    RK
+                    {getInitials(userName)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="text-left leading-tight">
-                  <div className="text-[13px] font-semibold">Raven K.</div>
+                  <div className="text-[13px] font-semibold">{userName}</div>
                   <div className="text-[10.5px] text-muted-foreground">{role}</div>
                 </div>
                 <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />

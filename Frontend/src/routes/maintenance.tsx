@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createRoute } from "@tanstack/react-router";
 import { Route as rootRoute } from "./SignIn";
 import { AppLayout, PageHeader } from "../components/app-layout";
@@ -16,6 +16,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "../components/ui/table";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { api } from "../lib/api/client";
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
@@ -23,42 +24,65 @@ export const Route = createRoute({
   component: MaintenancePage,
 });
 
-type LogEntry = { veh: string; svc: string; cost: string; status: StatusKind };
+interface MaintRecord {
+  id: string;
+  vehicle: { id: string; model: string; registration: string } | null;
+  vehicleId: string;
+  serviceType: string;
+  cost: string;
+  date: string;
+  status: string;
+}
 
-const INITIAL_LOGS: LogEntry[] = [
-  { veh: "VAN-05", svc: "Oil Change", cost: "2,500", status: "in-shop" },
-  { veh: "TRUCK-11", svc: "Engine Repair", cost: "18,000", status: "completed" },
-  { veh: "MINI-03", svc: "Tyre Replace", cost: "6,200", status: "in-shop" },
-];
+interface Vehicle {
+  id: string;
+  model: string;
+  registration: string;
+  status: string;
+}
 
 function MaintenancePage() {
-  const [logs, setLogs] = useState<LogEntry[]>(INITIAL_LOGS);
-  const [veh, setVeh] = useState("VAN-05");
-  const [svc, setSvc] = useState("Oil Change");
+  const [records, setRecords] = useState<MaintRecord[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [vehicleId, setVehicleId] = useState("");
+  const [serviceType, setServiceType] = useState("Oil Change");
   const [cost, setCost] = useState("2500");
-  const [date, setDate] = useState("07/07/2026");
-  const [status, setStatus] = useState("Active");
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [saving, setSaving] = useState(false);
 
-  function handleSave() {
-    const newEntry: LogEntry = {
-      veh,
-      svc,
-      cost: Number(cost).toLocaleString("en-IN"),
-      status: "in-shop",
-    };
-    setLogs((prev) => [...prev, newEntry]);
-    setVeh("");
-    setSvc("");
-    setCost("");
-    setDate("");
-    setStatus("Active");
-  }
+  const load = () => Promise.all([
+    api.get<MaintRecord[]>("/maintenance"),
+    api.get<Vehicle[]>("/vehicles"),
+  ]).then(([r, v]) => { setRecords(r); setVehicles(v.filter(ve => ve.status !== "retired")); });
 
-  const openTickets = logs.filter((l) => l.status === "in-shop").length;
-  const totalCost = logs.reduce((sum, l) => {
+  useEffect(() => { load().catch(console.error).finally(() => setLoading(false)); }, []);
+
+  const handleSave = async () => {
+    if (!vehicleId) { alert("Select a vehicle"); return; }
+    if (!serviceType || !cost || !date) { alert("Fill all fields"); return; }
+    setSaving(true);
+    try {
+      await api.post("/maintenance", { vehicleId, serviceType, cost, date });
+      setVehicleId(""); setServiceType("Oil Change"); setCost("2500"); setDate(new Date().toISOString().split("T")[0]);
+      await load();
+    } catch (err: any) { alert(err.message); } finally { setSaving(false); }
+  };
+
+  const handleClose = async (id: string) => {
+    try {
+      await api.put(`/maintenance/${id}/close`, {});
+      await load();
+    } catch (err: any) { alert(err.message); }
+  };
+
+  const openTickets = records.filter((l) => l.status === "Active").length;
+  const totalCost = records.reduce((sum, l) => {
     const num = parseInt(l.cost.replace(/,/g, ""), 10);
     return sum + (isNaN(num) ? 0 : num);
   }, 0);
+
+  if (loading) return <AppLayout><div className="p-8 text-muted-foreground">Loading maintenance...</div></AppLayout>;
 
   return (
     <AppLayout>
@@ -69,43 +93,29 @@ function MaintenancePage() {
           <div className="space-y-4">
             <div className="space-y-1.5">
               <Label>Vehicle</Label>
-              <Input
-                value={veh}
-                onChange={(e) => setVeh(e.target.value)}
-                placeholder="e.g. VAN-05"
-              />
+              <Select value={vehicleId} onValueChange={setVehicleId}>
+                <SelectTrigger><SelectValue placeholder={vehicles.length === 0 ? "No vehicles available" : "Select a vehicle"} /></SelectTrigger>
+                <SelectContent>
+                  {vehicles.map(v => (
+                    <SelectItem key={v.id} value={v.id}>{v.model} ({v.registration})</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-1.5">
               <Label>Service Type</Label>
-              <Input
-                value={svc}
-                onChange={(e) => setSvc(e.target.value)}
-                placeholder="e.g. Oil Change"
-              />
+              <Input value={serviceType} onChange={e => setServiceType(e.target.value)} placeholder="e.g. Oil Change" />
             </div>
             <div className="space-y-1.5">
               <Label>Cost (₹)</Label>
-              <Input
-                type="number"
-                value={cost}
-                onChange={(e) => setCost(e.target.value)}
-                placeholder="e.g. 2500"
-              />
+              <Input type="number" value={cost} onChange={e => setCost(e.target.value)} placeholder="e.g. 2500" />
             </div>
             <div className="space-y-1.5">
               <Label>Date</Label>
-              <Input
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                placeholder="DD/MM/YYYY"
-              />
+              <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
             </div>
-            <div className="space-y-1.5">
-              <Label>Status</Label>
-              <Input value={status} disabled className="bg-muted/50" />
-            </div>
-            <Button className="w-full h-11 mt-2" onClick={handleSave}>
-              Save Ticket Entry
+            <Button className="w-full h-11 mt-2" onClick={handleSave} disabled={saving || !vehicleId}>
+              {saving ? "Saving..." : "Save Ticket Entry"}
             </Button>
           </div>
 
@@ -133,30 +143,24 @@ function MaintenancePage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {logs.length === 0 ? (
+              {records.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
                     No service tickets yet.
                   </TableCell>
                 </TableRow>
               ) : (
-                logs.map((l, i) => (
-                  <TableRow key={i}>
-                    <TableCell className="font-mono font-semibold">{l.veh}</TableCell>
-                    <TableCell>{l.svc}</TableCell>
+                records.map((l) => (
+                  <TableRow key={l.id}>
+                    <TableCell className="font-mono font-semibold">{l.vehicle?.model ?? "—"}</TableCell>
+                    <TableCell>{l.serviceType}</TableCell>
                     <TableCell className="tabular-nums">{l.cost}</TableCell>
                     <TableCell>
-                      {l.status === "in-shop" ? (
+                      {l.status === "Active" ? (
                         <div className="flex items-center gap-2">
-                          <StatusPill status={l.status} />
+                          <StatusPill status="in-shop" />
                           <button
-                            onClick={() =>
-                              setLogs((prev) =>
-                                prev.map((entry, idx) =>
-                                  idx === i ? { ...entry, status: "completed" as StatusKind } : entry
-                                )
-                              )
-                            }
+                            onClick={() => handleClose(l.id)}
                             className="text-status-active hover:text-status-active/80 transition-colors"
                             title="Mark as completed"
                           >
@@ -164,7 +168,7 @@ function MaintenancePage() {
                           </button>
                         </div>
                       ) : (
-                        <StatusPill status={l.status} />
+                        <StatusPill status="completed" />
                       )}
                     </TableCell>
                   </TableRow>
