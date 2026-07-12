@@ -23,12 +23,7 @@ import {
 } from "../components/ui/table";
 import { StatusPill, type StatusKind } from "../components/status-pill";
 import { cn } from "../lib/utils";
-<<<<<<< HEAD
-import { api } from "../lib/api/client";
-import { useState, useEffect } from "react";
-=======
 import { Search } from "lucide-react";
->>>>>>> 0b1474344a69f80849ad50b4c1c1ed037ab0e1ac
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
@@ -36,39 +31,6 @@ export const Route = createRoute({
   component: DashboardPage,
 });
 
-<<<<<<< HEAD
-interface DashboardStats {
-  kpis: { label: string; value: string; accent: string }[];
-  fleetUtilization: number;
-  totalAssets: number;
-  fleetDistribution: { label: string; pct: number; cls: string }[];
-}
-
-interface Trip {
-  tripCode: string;
-  vehicle?: { model: string } | null;
-  driver?: { name: string } | null;
-  status: string;
-  eta?: string | null;
-}
-
-function DashboardPage() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [trips, setTrips] = useState<Trip[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    Promise.all([
-      api.get<DashboardStats>("/dashboard/stats"),
-      api.get<Trip[]>("/trips"),
-    ]).then(([s, t]) => {
-      setStats(s);
-      setTrips(t.slice(0, 4));
-    }).catch(console.error).finally(() => setLoading(false));
-  }, []);
-
-  if (loading) return <AppLayout><div className="p-8 text-muted-foreground">Loading dashboard...</div></AppLayout>;
-=======
 type Trip = {
   id: string;
   vehicle: string;
@@ -118,7 +80,6 @@ function DashboardPage() {
     { label: "In Shop", pct: 8, cls: "bg-status-warning" },
     { label: "Retired", pct: 2, cls: "bg-status-danger/60" },
   ];
->>>>>>> 0b1474344a69f80849ad50b4c1c1ed037ab0e1ac
 
   return (
     <AppLayout>
@@ -128,25 +89,6 @@ function DashboardPage() {
       />
 
       <Card className="p-4 mb-6 flex flex-wrap gap-3 items-center">
-<<<<<<< HEAD
-        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mr-2">Filters</span>
-        {[
-          { label: "Vehicle Type", opts: ["All", "Van", "Truck", "Mini"] },
-          { label: "Status", opts: ["All", "Available", "On Trip", "In Shop"] },
-          { label: "Region", opts: ["All", "East", "West", "North"] },
-        ].map((f) => (
-          <Select key={f.label} defaultValue={f.opts[0]}>
-            <SelectTrigger className="w-44 h-9">
-              <SelectValue placeholder={f.label} />
-            </SelectTrigger>
-            <SelectContent>
-              {f.opts.map((o) => (
-                <SelectItem key={o} value={o}>{f.label}: {o}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        ))}
-=======
         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mr-2">
           Filters
         </span>
@@ -197,25 +139,15 @@ function DashboardPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
->>>>>>> 0b1474344a69f80849ad50b4c1c1ed037ab0e1ac
       </Card>
 
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
-<<<<<<< HEAD
-        {stats?.kpis.map((k) => (
-          <Card key={k.label} className="p-4 relative overflow-hidden">
-            <div className={cn("absolute left-0 top-0 bottom-0 w-1", k.accent)} />
-            <div className="pl-2">
-              <div className="text-2xl font-black tracking-tight">{k.value}</div>
-              <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-1 leading-tight">{k.label}</div>
-=======
         <Card className="p-4 relative overflow-hidden">
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-status-active" />
           <div className="pl-2">
             <div className="text-2xl font-black tracking-tight">{activeTrips}</div>
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-1 leading-tight">
               Active Trips
->>>>>>> 0b1474344a69f80849ad50b4c1c1ed037ab0e1ac
             </div>
           </div>
         </Card>
@@ -248,10 +180,10 @@ function DashboardPage() {
         </Card>
         <Card className="p-4 relative overflow-hidden col-span-2 md:col-span-1">
           <div className="pl-1">
-            <div className="text-2xl font-black tracking-tight">{stats?.fleetUtilization ?? 0}%</div>
+            <div className="text-2xl font-black tracking-tight">60%</div>
             <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-1">Fleet Utilization</div>
             <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden">
-              <div className="h-full bg-status-available" style={{ width: `${stats?.fleetUtilization ?? 0}%` }} />
+              <div className="h-full bg-status-available" style={{ width: "60%" }} />
             </div>
           </div>
         </Card>
@@ -262,14 +194,10 @@ function DashboardPage() {
           <div className="p-5 border-b flex items-center justify-between">
             <div>
               <h3 className="font-semibold">Recent Trips</h3>
-<<<<<<< HEAD
-              <p className="text-xs text-muted-foreground mt-0.5">Live dispatcher pipeline snapshot</p>
-=======
               <p className="text-xs text-muted-foreground mt-0.5">
                 {filteredTrips.length} trip{filteredTrips.length !== 1 ? "s" : ""} found
                 {filteredTrips.length !== TRIPS.length && ` (filtered from ${TRIPS.length})`}
               </p>
->>>>>>> 0b1474344a69f80849ad50b4c1c1ed037ab0e1ac
             </div>
             <span className="text-xs text-muted-foreground">Updated just now</span>
           </div>
@@ -284,17 +212,6 @@ function DashboardPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-<<<<<<< HEAD
-              {trips.map((t, i) => (
-                <TableRow key={t.tripCode ?? i}>
-                  <TableCell className="font-mono font-semibold">{t.tripCode}</TableCell>
-                  <TableCell>{t.vehicle?.model ?? "—"}</TableCell>
-                  <TableCell>{t.driver?.name ?? "—"}</TableCell>
-                  <TableCell><StatusPill status={t.status as any} /></TableCell>
-                  <TableCell className="text-right">{t.eta ?? "—"}</TableCell>
-                </TableRow>
-              ))}
-=======
               {filteredTrips.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
@@ -314,7 +231,6 @@ function DashboardPage() {
                   </TableRow>
                 ))
               )}
->>>>>>> 0b1474344a69f80849ad50b4c1c1ed037ab0e1ac
             </TableBody>
           </Table>
         </Card>
@@ -323,11 +239,7 @@ function DashboardPage() {
           <h3 className="font-semibold">Fleet Distribution</h3>
           <p className="text-xs text-muted-foreground mt-0.5">Live asset utilization breakdown</p>
           <div className="mt-6 space-y-5">
-<<<<<<< HEAD
-            {(stats?.fleetDistribution ?? []).map((r) => (
-=======
             {fleetDist.map((r) => (
->>>>>>> 0b1474344a69f80849ad50b4c1c1ed037ab0e1ac
               <div key={r.label}>
                 <div className="flex justify-between text-sm mb-1.5">
                   <span className="font-medium">{r.label}</span>
@@ -340,7 +252,7 @@ function DashboardPage() {
             ))}
           </div>
           <div className="mt-6 pt-5 border-t text-xs text-muted-foreground">
-            Total assets tracked <span className="font-semibold text-foreground">{stats?.totalAssets ?? 0}</span> · Depot GJ4
+            Total assets tracked <span className="font-semibold text-foreground">42</span> · Depot GJ4
           </div>
         </Card>
       </div>
