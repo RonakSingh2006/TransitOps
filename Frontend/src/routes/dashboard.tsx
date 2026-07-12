@@ -1,7 +1,11 @@
+"use client";
+
+import { useState } from "react";
 import { createRoute } from "@tanstack/react-router";
 import { Route as rootRoute } from "./SignIn";
 import { AppLayout, PageHeader } from "../components/app-layout";
 import { Card } from "../components/ui/card";
+import { Input } from "../components/ui/input";
 import {
   Select,
   SelectContent,
@@ -17,8 +21,9 @@ import {
   TableHeader,
   TableRow,
 } from "../components/ui/table";
-import { StatusPill } from "../components/status-pill";
+import { StatusPill, type StatusKind } from "../components/status-pill";
 import { cn } from "../lib/utils";
+import { Search } from "lucide-react";
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
@@ -26,16 +31,56 @@ export const Route = createRoute({
   component: DashboardPage,
 });
 
-const KPIS = [
-  { label: "Active Vehicles", value: "53", accent: "bg-status-active" },
-  { label: "Available Vehicles", value: "42", accent: "bg-status-available" },
-  { label: "In Maintenance", value: "05", accent: "bg-status-warning" },
-  { label: "Active Trips", value: "18", accent: "bg-status-active" },
-  { label: "Pending Trips", value: "09", accent: "bg-status-neutral" },
-  { label: "Drivers On Duty", value: "26", accent: "bg-primary" },
+type Trip = {
+  id: string;
+  vehicle: string;
+  driver: string;
+  status: StatusKind;
+  eta: string;
+  vehicleType: string;
+  region: string;
+};
+
+const TRIPS: Trip[] = [
+  { id: "TR001", vehicle: "VAN-05", driver: "Alex", status: "on-trip", eta: "45 min", vehicleType: "Van", region: "East" },
+  { id: "TR002", vehicle: "TRK-12", driver: "John", status: "completed", eta: "—", vehicleType: "Truck", region: "West" },
+  { id: "TR003", vehicle: "MINI-08", driver: "Priya", status: "dispatched", eta: "1h 10m", vehicleType: "Mini", region: "North" },
+  { id: "TR004", vehicle: "—", driver: "—", status: "draft", eta: "Awaiting vehicle", vehicleType: "Van", region: "East" },
 ];
 
 function DashboardPage() {
+  const [typeFilter, setTypeFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [regionFilter, setRegionFilter] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredTrips = TRIPS.filter((t) => {
+    const matchType = typeFilter === "All" || t.vehicleType === typeFilter;
+    const matchStatus =
+      statusFilter === "All" ||
+      t.status === statusFilter.toLowerCase().replace(/\s+/g, "-");
+    const matchRegion = regionFilter === "All" || t.region === regionFilter;
+    const matchSearch =
+      !searchQuery ||
+      t.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.vehicle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.driver.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchType && matchStatus && matchRegion && matchSearch;
+  });
+
+  const activeTrips = filteredTrips.filter(
+    (t) => t.status === "on-trip" || t.status === "dispatched"
+  ).length;
+  const pendingTrips = filteredTrips.filter((t) => t.status === "draft").length;
+  const completedTrips = filteredTrips.filter((t) => t.status === "completed").length;
+
+  const fleetDist = [
+    { label: "Available", pct: 60, cls: "bg-status-available" },
+    { label: "On Trip", pct: 30, cls: "bg-status-active" },
+    { label: "In Shop", pct: 8, cls: "bg-status-warning" },
+    { label: "Retired", pct: 2, cls: "bg-status-danger/60" },
+  ];
+
   return (
     <AppLayout>
       <PageHeader
@@ -48,39 +93,93 @@ function DashboardPage() {
         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mr-2">
           Filters
         </span>
-        {[
-          { label: "Vehicle Type", opts: ["All", "Van", "Truck", "Mini"] },
-          { label: "Status", opts: ["All", "Available", "On Trip", "In Shop"] },
-          { label: "Region", opts: ["All", "East", "West", "North"] },
-        ].map((f) => (
-          <Select key={f.label} defaultValue={f.opts[0]}>
-            <SelectTrigger className="w-44 h-9">
-              <SelectValue placeholder={f.label} />
-            </SelectTrigger>
-            <SelectContent>
-              {f.opts.map((o) => (
-                <SelectItem key={o} value={o}>
-                  {f.label}: {o}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        ))}
+
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="w-44 h-9">
+            <SelectValue placeholder="Vehicle Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="All">Vehicle Type: All</SelectItem>
+            <SelectItem value="Van">Vehicle Type: Van</SelectItem>
+            <SelectItem value="Truck">Vehicle Type: Truck</SelectItem>
+            <SelectItem value="Mini">Vehicle Type: Mini</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-44 h-9">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="All">Status: All</SelectItem>
+            <SelectItem value="On Trip">Status: On Trip</SelectItem>
+            <SelectItem value="Completed">Status: Completed</SelectItem>
+            <SelectItem value="Dispatched">Status: Dispatched</SelectItem>
+            <SelectItem value="Draft">Status: Draft</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select value={regionFilter} onValueChange={setRegionFilter}>
+          <SelectTrigger className="w-44 h-9">
+            <SelectValue placeholder="Region" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="All">Region: All</SelectItem>
+            <SelectItem value="East">Region: East</SelectItem>
+            <SelectItem value="West">Region: West</SelectItem>
+            <SelectItem value="North">Region: North</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <div className="relative flex-1 min-w-48">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search trips by ID, vehicle, driver…"
+            className="pl-9 h-9"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
       </Card>
 
       {/* KPI grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
-        {KPIS.map((k) => (
-          <Card key={k.label} className="p-4 relative overflow-hidden">
-            <div className={cn("absolute left-0 top-0 bottom-0 w-1", k.accent)} />
-            <div className="pl-2">
-              <div className="text-2xl font-black tracking-tight">{k.value}</div>
-              <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-1 leading-tight">
-                {k.label}
-              </div>
+        <Card className="p-4 relative overflow-hidden">
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-status-active" />
+          <div className="pl-2">
+            <div className="text-2xl font-black tracking-tight">{activeTrips}</div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-1 leading-tight">
+              Active Trips
             </div>
-          </Card>
-        ))}
+          </div>
+        </Card>
+        <Card className="p-4 relative overflow-hidden">
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-status-available" />
+          <div className="pl-2">
+            <div className="text-2xl font-black tracking-tight">{completedTrips}</div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-1 leading-tight">
+              Completed Trips
+            </div>
+          </div>
+        </Card>
+        <Card className="p-4 relative overflow-hidden">
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-status-neutral" />
+          <div className="pl-2">
+            <div className="text-2xl font-black tracking-tight">{pendingTrips}</div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-1 leading-tight">
+              Pending Trips
+            </div>
+          </div>
+        </Card>
+        <Card className="p-4 relative overflow-hidden">
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
+          <div className="pl-2">
+            <div className="text-2xl font-black tracking-tight">26</div>
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground mt-1 leading-tight">
+              Drivers On Duty
+            </div>
+          </div>
+        </Card>
         <Card className="p-4 relative overflow-hidden col-span-2 md:col-span-1">
           <div className="pl-1">
             <div className="text-2xl font-black tracking-tight">81%</div>
@@ -101,7 +200,8 @@ function DashboardPage() {
             <div>
               <h3 className="font-semibold">Recent Trips</h3>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Live dispatcher pipeline snapshot
+                {filteredTrips.length} trip{filteredTrips.length !== 1 ? "s" : ""} found
+                {filteredTrips.length !== TRIPS.length && ` (filtered from ${TRIPS.length})`}
               </p>
             </div>
             <span className="text-xs text-muted-foreground">Updated just now</span>
@@ -117,42 +217,25 @@ function DashboardPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow>
-                <TableCell className="font-mono font-semibold">TR001</TableCell>
-                <TableCell>VAN-05</TableCell>
-                <TableCell>Alex</TableCell>
-                <TableCell>
-                  <StatusPill status="on-trip" />
-                </TableCell>
-                <TableCell className="text-right">45 min</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-mono font-semibold">TR002</TableCell>
-                <TableCell>TRK-12</TableCell>
-                <TableCell>John</TableCell>
-                <TableCell>
-                  <StatusPill status="completed" />
-                </TableCell>
-                <TableCell className="text-right text-muted-foreground">—</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-mono font-semibold">TR003</TableCell>
-                <TableCell>MINI-08</TableCell>
-                <TableCell>Priya</TableCell>
-                <TableCell>
-                  <StatusPill status="dispatched" />
-                </TableCell>
-                <TableCell className="text-right">1h 10m</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-mono font-semibold">TR004</TableCell>
-                <TableCell className="text-muted-foreground">—</TableCell>
-                <TableCell className="text-muted-foreground">—</TableCell>
-                <TableCell>
-                  <StatusPill status="draft" />
-                </TableCell>
-                <TableCell className="text-right text-muted-foreground">Awaiting vehicle</TableCell>
-              </TableRow>
+              {filteredTrips.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                    No trips match the current filters.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredTrips.map((t) => (
+                  <TableRow key={t.id}>
+                    <TableCell className="font-mono font-semibold">{t.id}</TableCell>
+                    <TableCell>{t.vehicle}</TableCell>
+                    <TableCell>{t.driver}</TableCell>
+                    <TableCell>
+                      <StatusPill status={t.status} />
+                    </TableCell>
+                    <TableCell className="text-right">{t.eta}</TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </Card>
@@ -163,12 +246,7 @@ function DashboardPage() {
             Live asset utilization breakdown
           </p>
           <div className="mt-6 space-y-5">
-            {[
-              { label: "Available", pct: 60, cls: "bg-status-available" },
-              { label: "On Trip", pct: 30, cls: "bg-status-active" },
-              { label: "In Shop", pct: 8, cls: "bg-status-warning" },
-              { label: "Retired", pct: 2, cls: "bg-status-danger/60" },
-            ].map((r) => (
+            {fleetDist.map((r) => (
               <div key={r.label}>
                 <div className="flex justify-between text-sm mb-1.5">
                   <span className="font-medium">{r.label}</span>
