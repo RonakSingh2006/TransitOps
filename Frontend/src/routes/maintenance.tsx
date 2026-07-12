@@ -15,13 +15,7 @@ import { StatusPill, type StatusKind } from "../components/status-pill";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "../components/ui/table";
-<<<<<<< HEAD
-import { api } from "../lib/api/client";
-import { useState, useEffect } from "react";
-import { ArrowRight } from "lucide-react";
-=======
 import { ArrowRight, CheckCircle2 } from "lucide-react";
->>>>>>> 0b1474344a69f80849ad50b4c1c1ed037ab0e1ac
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
@@ -29,45 +23,6 @@ export const Route = createRoute({
   component: MaintenancePage,
 });
 
-<<<<<<< HEAD
-interface MaintRecord {
-  id: string;
-  vehicle: { id: string; model: string } | null;
-  vehicleId: string;
-  serviceType: string;
-  cost: string;
-  status: string;
-}
-interface Vehicle { id: string; model: string; registration: string; status: string }
-
-function MaintenancePage() {
-  const [records, setRecords] = useState<MaintRecord[]>([]);
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [vehicleId, setVehicleId] = useState("");
-  const [serviceType, setServiceType] = useState("Oil Change");
-  const [cost, setCost] = useState("2500");
-  const [date, setDate] = useState("2026-07-07");
-
-  const load = () => Promise.all([
-    api.get<MaintRecord[]>("/maintenance"),
-    api.get<Vehicle[]>("/vehicles"),
-  ]).then(([r, v]) => { setRecords(r); setVehicles(v); });
-
-  useEffect(() => { load().catch(console.error).finally(() => setLoading(false)); }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!vehicleId) return;
-    try {
-      await api.post("/maintenance", { vehicleId, serviceType, cost, date });
-      setVehicleId(""); setServiceType("Oil Change"); setCost("2500"); setDate("2026-07-07");
-      await load();
-    } catch (err: any) { alert(err.message); }
-  };
-
-  if (loading) return <AppLayout><div className="p-8 text-muted-foreground">Loading maintenance...</div></AppLayout>;
-=======
 type LogEntry = { veh: string; svc: string; cost: string; status: StatusKind };
 
 const INITIAL_LOGS: LogEntry[] = [
@@ -104,7 +59,6 @@ function MaintenancePage() {
     const num = parseInt(l.cost.replace(/,/g, ""), 10);
     return sum + (isNaN(num) ? 0 : num);
   }, 0);
->>>>>>> 0b1474344a69f80849ad50b4c1c1ed037ab0e1ac
 
   return (
     <AppLayout>
@@ -112,25 +66,9 @@ function MaintenancePage() {
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,40fr)_minmax(0,60fr)] gap-6">
         <Card className="p-6">
           <h3 className="font-semibold mb-4">New Service Ticket</h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-4">
             <div className="space-y-1.5">
               <Label>Vehicle</Label>
-<<<<<<< HEAD
-              <Select value={vehicleId} onValueChange={setVehicleId}>
-                <SelectTrigger><SelectValue placeholder="Select a vehicle" /></SelectTrigger>
-                <SelectContent>
-                  {vehicles.filter(v => v.status !== "retired").map(v => (
-                    <SelectItem key={v.id} value={v.id}>{v.model} ({v.registration})</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5"><Label>Service Type</Label><Input value={serviceType} onChange={e => setServiceType(e.target.value)} required /></div>
-            <div className="space-y-1.5"><Label>Cost (₹)</Label><Input type="number" value={cost} onChange={e => setCost(e.target.value)} required /></div>
-            <div className="space-y-1.5"><Label>Date</Label><Input type="date" value={date} onChange={e => setDate(e.target.value)} required /></div>
-            <Button type="submit" className="w-full h-11 mt-2" disabled={!vehicleId}>Save Ticket Entry</Button>
-          </form>
-=======
               <Input
                 value={veh}
                 onChange={(e) => setVeh(e.target.value)}
@@ -171,7 +109,6 @@ function MaintenancePage() {
             </Button>
           </div>
 
->>>>>>> 0b1474344a69f80849ad50b4c1c1ed037ab0e1ac
           <div className="mt-6 rounded-xl border bg-muted/40 p-4">
             <div className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground mb-3">State Transitions</div>
             <div className="space-y-2 text-sm">
@@ -187,21 +124,13 @@ function MaintenancePage() {
         <Card className="p-0 overflow-hidden">
           <div className="p-5 border-b"><h3 className="font-semibold">Active Service Diagnostic Logs</h3><p className="text-xs text-muted-foreground mt-0.5">Current workshop tickets and their operational cost</p></div>
           <Table>
-            <TableHeader><TableRow><TableHead>Vehicle</TableHead><TableHead>Service Action</TableHead><TableHead>Cost (₹)</TableHead><TableHead>Status</TableHead></TableRow></TableHeader>
-            <TableBody>{records.map(l => (
-              <TableRow key={l.id}>
-                <TableCell className="font-mono font-semibold">{l.vehicle?.model ?? "—"}</TableCell>
-                <TableCell>{l.serviceType}</TableCell>
-                <TableCell className="tabular-nums">{l.cost}</TableCell>
-                <TableCell><StatusPill status={(l.status === "Completed" ? "completed" : "in-shop") as StatusKind} /></TableCell>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Vehicle</TableHead>
+                <TableHead>Service Action</TableHead>
+                <TableHead>Cost (₹)</TableHead>
+                <TableHead>Status</TableHead>
               </TableRow>
-<<<<<<< HEAD
-            ))}</TableBody>
-          </Table>
-          <div className="p-4 border-t bg-muted/30 flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">{records.length} open tickets</span>
-            <span className="font-semibold">Total workshop spend: <span className="font-mono">₹ {records.reduce((a, r) => a + (parseInt(r.cost.replace(/,/g, "")) || 0), 0).toLocaleString("en-IN")}</span></span>
-=======
             </TableHeader>
             <TableBody>
               {logs.length === 0 ? (
@@ -248,7 +177,6 @@ function MaintenancePage() {
             <span className="font-semibold">
               Total workshop spend: <span className="font-mono">₹ {totalCost.toLocaleString("en-IN")}</span>
             </span>
->>>>>>> 0b1474344a69f80849ad50b4c1c1ed037ab0e1ac
           </div>
         </Card>
       </div>
