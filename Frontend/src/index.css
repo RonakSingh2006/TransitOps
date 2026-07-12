@@ -27,10 +27,7 @@
   --color-sidebar-accent: oklch(0.278 0.033 256.848);
   --color-sidebar-border: oklch(0.278 0.033 256.848);
   --color-status-active: oklch(0.488 0.243 264.376);
-  --color-status-available: oklch(0.527 0.154 150.069);
-  --color-status-warning: oklch(0.681 0.162 75.834);
-  --color-status-neutral: oklch(0.556 0.028 261.604);
-  --color-status-danger: oklch(0.577 0.245 27.325);
+  --color-status-active-bg: oklch(0.92 0.04 264.376);
   --color-status-available: oklch(0.5 0.15 145);
   --color-status-available-bg: oklch(0.95 0.03 145);
   --color-status-warning: oklch(0.6 0.18 75);
