@@ -28,6 +28,7 @@ export default function AuthPage() {
   const navigate = useNavigate();
   const { setRole } = useRole();
   const [selectedRole, setSelectedRole] = useState<Role>("Fleet Manager");
+  const [loginError, setLoginError] = useState(false);
 
   return (
     <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-2">
@@ -87,6 +88,19 @@ export default function AuthPage() {
       <div className="relative flex items-center justify-center p-6 lg:p-12 bg-[oklch(0.985_0.005_255)]">
         <div className="w-full max-w-md">
           <div className="rounded-2xl bg-card border shadow-sm p-8 relative">
+            {loginError && (
+              <div className="absolute -right-3 top-24 hidden xl:block w-64">
+                <div className="rounded-lg border border-status-danger/40 bg-status-danger-bg text-status-danger p-3 shadow-sm">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                    <div className="text-[12px] leading-snug">
+                      <div className="font-semibold">Invalid credentials.</div>
+                      Account locked after 5 failed attempts.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="mb-6">
               <h1 className="text-2xl font-bold tracking-tight">Sign in to your depot</h1>
               <p className="text-sm text-muted-foreground mt-1">
@@ -98,6 +112,8 @@ export default function AuthPage() {
               className="space-y-4"
               onSubmit={(e) => {
                 e.preventDefault();
+                setLoginError(true);
+                setTimeout(() => setLoginError(false), 4000);
                 setRole(selectedRole);
                 navigate({ to: "/dashboard" });
               }}
