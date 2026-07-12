@@ -41,8 +41,14 @@ export default function AuthPage() {
           }}
         />
         <div className="relative z-10 flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground font-black">
-            TO
+          <div className="grid h-11 w-11 place-items-center rounded-xl bg-sidebar-primary text-sidebar-primary-foreground">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-gem">
+              <polyline points="6 3 18 3 22 9 12 22 2 9" />
+              <polyline points="2 9 6 3 12 9" />
+              <polyline points="22 9 18 3 12 9" />
+              <line x1="12" y1="22" x2="12" y2="9" />
+              <line x1="2" y1="9" x2="22" y2="9" />
+            </svg>
           </div>
           <div>
             <div className="text-xl font-black tracking-tight">TransitOps</div>
