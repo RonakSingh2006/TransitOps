@@ -31,6 +31,13 @@
   --color-status-warning: oklch(0.681 0.162 75.834);
   --color-status-neutral: oklch(0.556 0.028 261.604);
   --color-status-danger: oklch(0.577 0.245 27.325);
+  --color-status-available: oklch(0.5 0.15 145);
+  --color-status-available-bg: oklch(0.95 0.03 145);
+  --color-status-warning: oklch(0.6 0.18 75);
+  --color-status-warning-bg: oklch(0.97 0.03 75);
+  --color-status-neutral: oklch(0.5 0.01 260);
+  --color-status-neutral-bg: oklch(0.95 0.01 260);
+  --color-status-danger: oklch(0.577 0.245 27.325);
   --color-status-danger-bg: oklch(0.971 0.013 27.325);
   --color-status-danger-foreground: oklch(0.577 0.245 27.325);
   --radius-sm: 0.25rem;
