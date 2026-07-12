@@ -5,8 +5,11 @@ import { Route as rootRoute, IndexRoute } from "./routes/SignIn";
 import { Route as dashboardRoute } from "./routes/dashboard";
 import { Route as driversRoute } from "./routes/drivers";
 import { Route as tripsRoute } from "./routes/trips";
+import { Route as maintenanceRoute } from "./routes/maintenance";
+import { Route as expensesRoute } from "./routes/expenses";
+import { Route as analyticsRoute } from "./routes/analytics";
 
-const routeTree = rootRoute.addChildren([IndexRoute, dashboardRoute, driversRoute, tripsRoute]);
+const routeTree = rootRoute.addChildren([IndexRoute, dashboardRoute, driversRoute, tripsRoute, maintenanceRoute, expensesRoute, analyticsRoute]);
 const router = createRouter({ routeTree });
 
 declare module "@tanstack/react-router" {
