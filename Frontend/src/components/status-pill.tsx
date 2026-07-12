@@ -5,9 +5,11 @@ export type StatusKind =
   | "completed"
   | "valid"
   | "on-trip"
+  | "on_trip"
   | "dispatched"
   | "active"
   | "in-shop"
+  | "in_shop"
   | "warning"
   | "pending"
   | "suspended"
@@ -15,9 +17,14 @@ export type StatusKind =
   | "expired"
   | "retired"
   | "draft"
-  | "off-duty";
+  | "off-duty"
+  | "off_duty";
 
-const MAP: Record<StatusKind, { label?: string; tone: "available" | "active" | "warning" | "danger" | "neutral" }> = {
+function normalize(s: string): string {
+  return s.replace(/_/g, "-");
+}
+
+const MAP: Record<string, { label?: string; tone: string }> = {
   available: { tone: "available" },
   completed: { tone: "available" },
   valid: { tone: "available" },
@@ -52,14 +59,12 @@ export function StatusPill({
   children?: React.ReactNode;
   className?: string;
 }) {
-  const cfg = MAP[status];
-  const label = children ?? cfg.label ?? status.charAt(0).toUpperCase() + status.slice(1);
+  const key = typeof status === "string" ? normalize(status) : "draft";
+  const cfg = MAP[key] ?? MAP.draft;
+  const label = children ?? cfg.label ?? status?.charAt(0).toUpperCase() + status?.slice(1).replace(/_/g, " ");
   return (
     <span className={cn("status-pill", TONE_CLASS[cfg.tone], className)}>
-      <span
-        className={cn("h-1.5 w-1.5 rounded-full")}
-        style={{ backgroundColor: "currentColor" }}
-      />
+      <span className={cn("h-1.5 w-1.5 rounded-full")} style={{ backgroundColor: "currentColor" }} />
       {label}
     </span>
   );

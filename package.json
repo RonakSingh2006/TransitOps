@@ -1,0 +1,13 @@
+{
+  "name": "transitops",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev --prefix react_backend\" \"npm run dev --prefix Frontend\"",
+    "db:push": "npm run db:push --prefix react_backend",
+    "db:seed": "npm run db:seed --prefix react_backend",
+    "setup": "npm install --prefix react_backend && npm install --prefix Frontend && npx prisma generate --schema=react_backend/prisma/schema.prisma"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
