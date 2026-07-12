@@ -55,9 +55,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-0.5">
-          {NAV.map((item) => {
+          {NAV.filter((item) => canAccess(item.module)).map((item) => {
             const active = pathname === item.to || pathname.startsWith(item.to + "/");
-            const allowed = canAccess(item.module);
             return (
               <Link
                 key={item.to}
@@ -67,17 +66,11 @@ export function AppLayout({ children }: { children: ReactNode }) {
                   "group flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors",
                   active
                     ? "bg-sidebar-primary/15 text-white ring-1 ring-sidebar-primary/40"
-                    : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-white",
-                  !allowed && "opacity-45"
+                    : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-white"
                 )}
               >
                 <item.icon className="h-4 w-4 shrink-0" />
                 <span className="truncate">{item.label}</span>
-                {!allowed && (
-                  <span className="ml-auto text-[9px] uppercase tracking-wider text-sidebar-foreground/50">
-                    locked
-                  </span>
-                )}
               </Link>
             );
           })}
