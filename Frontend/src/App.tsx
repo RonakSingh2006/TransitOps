@@ -1,5 +1,12 @@
+import { RoleProvider } from "./lib/role-context";
+import AuthPage from "./routes/SignIn";
+
 function App() {
-  return <h1 className="bg-gray-800 text-white">Hello World</h1>
+  return (
+    <RoleProvider>
+      <AuthPage />
+    </RoleProvider>
+  );
 }
 
-export default App
+export default App;
