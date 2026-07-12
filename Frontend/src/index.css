@@ -1,1 +1,100 @@
 @import "tailwindcss";
+
+@theme {
+  --color-background: oklch(1 0 0);
+  --color-foreground: oklch(0.145 0 0);
+  --color-card: oklch(1 0 0);
+  --color-card-foreground: oklch(0.145 0 0);
+  --color-popover: oklch(1 0 0);
+  --color-popover-foreground: oklch(0.145 0 0);
+  --color-primary: oklch(0.205 0.042 265.755);
+  --color-primary-foreground: oklch(0.985 0 0);
+  --color-secondary: oklch(0.965 0.001 286.375);
+  --color-secondary-foreground: oklch(0.205 0.042 265.755);
+  --color-muted: oklch(0.965 0.001 286.375);
+  --color-muted-foreground: oklch(0.556 0.028 261.604);
+  --color-accent: oklch(0.965 0.001 286.375);
+  --color-accent-foreground: oklch(0.205 0.042 265.755);
+  --color-destructive: oklch(0.577 0.245 27.325);
+  --color-destructive-foreground: oklch(0.577 0.245 27.325);
+  --color-border: oklch(0.922 0.004 286.375);
+  --color-input: oklch(0.922 0.004 286.375);
+  --color-ring: oklch(0.205 0.042 265.755);
+  --color-sidebar: oklch(0.205 0.042 265.755);
+  --color-sidebar-foreground: oklch(0.985 0 0);
+  --color-sidebar-primary: oklch(0.488 0.243 264.376);
+  --color-sidebar-primary-foreground: oklch(0.985 0 0);
+  --color-sidebar-accent: oklch(0.278 0.033 256.848);
+  --color-sidebar-border: oklch(0.278 0.033 256.848);
+  --color-status-active: oklch(0.488 0.243 264.376);
+  --color-status-active-bg: oklch(0.92 0.04 264.376);
+  --color-status-available: oklch(0.5 0.15 145);
+  --color-status-available-bg: oklch(0.95 0.03 145);
+  --color-status-warning: oklch(0.6 0.18 75);
+  --color-status-warning-bg: oklch(0.97 0.03 75);
+  --color-status-neutral: oklch(0.5 0.01 260);
+  --color-status-neutral-bg: oklch(0.95 0.01 260);
+  --color-status-danger: oklch(0.577 0.245 27.325);
+  --color-status-danger-bg: oklch(0.971 0.013 27.325);
+  --color-status-danger-foreground: oklch(0.577 0.245 27.325);
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+}
+
+/* ── Dark mode overrides ── */
+.dark {
+  --color-background: oklch(0.145 0 0);
+  --color-foreground: oklch(0.985 0 0);
+  --color-card: oklch(0.205 0.042 265.755);
+  --color-card-foreground: oklch(0.985 0 0);
+  --color-popover: oklch(0.205 0.042 265.755);
+  --color-popover-foreground: oklch(0.985 0 0);
+  --color-primary: oklch(0.588 0.158 255.734);
+  --color-primary-foreground: oklch(0.1 0 0);
+  --color-secondary: oklch(0.278 0.033 256.848);
+  --color-secondary-foreground: oklch(0.985 0 0);
+  --color-muted: oklch(0.278 0.033 256.848);
+  --color-muted-foreground: oklch(0.716 0.033 260.604);
+  --color-accent: oklch(0.278 0.033 256.848);
+  --color-accent-foreground: oklch(0.985 0 0);
+  --color-destructive: oklch(0.577 0.245 27.325);
+  --color-destructive-foreground: oklch(0.985 0 0);
+  --color-border: oklch(0.278 0.033 256.848);
+  --color-input: oklch(0.278 0.033 256.848);
+  --color-ring: oklch(0.588 0.158 255.734);
+  --color-sidebar: oklch(0.09 0.02 260);
+  --color-sidebar-foreground: oklch(0.985 0 0);
+  --color-sidebar-primary: oklch(0.488 0.243 264.376);
+  --color-sidebar-primary-foreground: oklch(0.985 0 0);
+  --color-sidebar-accent: oklch(0.22 0.03 260);
+  --color-sidebar-border: oklch(0.22 0.03 260);
+  --color-status-active: oklch(0.65 0.2 255);
+  --color-status-active-bg: oklch(0.25 0.06 260);
+  --color-status-available: oklch(0.65 0.18 145);
+  --color-status-available-bg: oklch(0.2 0.05 145);
+  --color-status-warning: oklch(0.7 0.18 75);
+  --color-status-warning-bg: oklch(0.25 0.05 75);
+  --color-status-neutral: oklch(0.65 0.03 260);
+  --color-status-neutral-bg: oklch(0.22 0.02 260);
+  --color-status-danger: oklch(0.65 0.22 27);
+  --color-status-danger-bg: oklch(0.25 0.06 27);
+  --color-status-danger-foreground: oklch(0.65 0.22 27);
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* Utility class for smooth theme transitions on themed elements */
+.theme-transition {
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
