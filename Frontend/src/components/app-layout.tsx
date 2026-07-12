@@ -112,17 +112,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Switch role</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {ROLES.map((r) => (
-                  <DropdownMenuItem
-                    key={r}
-                    onClick={() => setRole(r as Role)}
-                    className={cn(role === r && "bg-accent font-semibold")}
-                  >
-                    {r}
-                  </DropdownMenuItem>
-                ))}
+                <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
+                  Signed in as <span className="font-semibold text-foreground capitalize">{role}</span>
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link to="/" search={{}}>Sign out</Link>
