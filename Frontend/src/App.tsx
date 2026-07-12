@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { RoleProvider } from "./lib/role-context";
+import { ThemeProvider } from "./lib/theme-context";
 import { Route as rootRoute, IndexRoute } from "./routes/SignIn";
 import { Route as dashboardRoute } from "./routes/dashboard";
 import { Route as driversRoute } from "./routes/drivers";
@@ -23,9 +24,11 @@ declare module "@tanstack/react-router" {
 function App() {
   return (
     <StrictMode>
-      <RoleProvider>
-        <RouterProvider router={router} />
-      </RoleProvider>
+      <ThemeProvider>
+        <RoleProvider>
+          <RouterProvider router={router} />
+        </RoleProvider>
+      </ThemeProvider>
     </StrictMode>
   );
 }

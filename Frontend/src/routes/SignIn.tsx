@@ -85,7 +85,7 @@ export default function AuthPage() {
       </div>
 
       {/* Right form */}
-      <div className="relative flex items-center justify-center p-6 lg:p-12 bg-[oklch(0.985_0.005_255)]">
+      <div className="relative flex items-center justify-center p-6 lg:p-12 bg-muted/30">
         <div className="w-full max-w-md">
           <div className="rounded-2xl bg-card border shadow-sm p-8 relative">
             {loginError && (

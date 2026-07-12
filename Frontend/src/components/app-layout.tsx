@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { useRole, ROLES, type Role } from "../lib/role-context";
+import { useTheme } from "../lib/theme-context";
+import { Sun, Moon } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,9 +42,10 @@ const NAV = [
 export function AppLayout({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { role, setRole, canAccess } = useRole();
+  const { theme, toggle } = useTheme();
 
   return (
-    <div className="flex min-h-screen w-full bg-[oklch(0.985_0.005_255)]">
+    <div className="flex min-h-screen w-full bg-background">
       {/* Sidebar */}
       <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground">
         <div className="px-4 py-3 border-b border-sidebar-border">
@@ -94,6 +97,13 @@ export function AppLayout({ children }: { children: ReactNode }) {
             />
           </div>
           <div className="ml-auto flex items-center gap-3">
+            <button
+              onClick={toggle}
+              className="grid h-9 w-9 place-items-center rounded-md hover:bg-muted"
+              title={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+            >
+              {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+            </button>
             <button className="relative grid h-9 w-9 place-items-center rounded-md hover:bg-muted">
               <Bell className="h-4 w-4" />
               <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-status-danger" />
