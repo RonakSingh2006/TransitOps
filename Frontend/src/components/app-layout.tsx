@@ -45,16 +45,11 @@ export function AppLayout({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen w-full bg-[oklch(0.985_0.005_255)]">
       {/* Sidebar */}
       <aside className="hidden lg:flex w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground">
-        <div className="px-5 py-5 border-b border-sidebar-border">
-          <div className="flex items-center gap-2.5">
-            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground font-black text-sm">
-              TO
-            </div>
-            <div className="min-w-0">
-              <div className="text-[15px] font-bold tracking-tight leading-tight">TransitOps</div>
-              <div className="text-[10.5px] uppercase tracking-wider text-sidebar-foreground/60 leading-tight mt-0.5">
-                Smart Transport Ops
-              </div>
+        <div className="px-4 py-3 border-b border-sidebar-border">
+          <div className="flex flex-col items-start">
+            <img src="/logo.svg" alt="TransitOps" className="h-20" />
+            <div className="text-[10.5px] uppercase tracking-wider text-sidebar-foreground/60 leading-tight mt-0.5">
+              Smart Transport Ops
             </div>
           </div>
         </div>
