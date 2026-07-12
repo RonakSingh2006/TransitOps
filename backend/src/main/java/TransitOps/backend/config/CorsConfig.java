@@ -1,8 +1,4 @@
-package TransitOps.backend.config;
-
-import org.springframework.web.cors.CorsConfiguration;
-
-public class CorsConfig package com.transitops.config;
+package com.transitops.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,5 +23,4 @@ public class CorsConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
-}{
 }
