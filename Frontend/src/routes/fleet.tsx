@@ -71,6 +71,7 @@ function FleetPage() {
   const [rows, setRows] = useState<Vehicle[]>(INITIAL_ROWS);
   const [typeFilter, setTypeFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState<Vehicle>({ ...emptyForm });
 
@@ -79,7 +80,11 @@ function FleetPage() {
     const matchStatus =
       statusFilter === "All" ||
       r.status === statusFilter.toLowerCase().replace(/\s+/g, "-");
-    return matchType && matchStatus;
+    const matchSearch =
+      !searchQuery ||
+      r.reg.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.model.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchType && matchStatus && matchSearch;
   });
 
   const retiredCount = rows.filter((r) => r.status === "retired").length;
@@ -105,7 +110,12 @@ function FleetPage() {
       <Card className="p-4 mb-5 flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-64">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search registration number (e.g. GJ01AB…)" className="pl-9 h-10" />
+          <Input
+            placeholder="Search registration number (e.g. GJ01AB…)"
+            className="pl-9 h-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
 
         <Select value={typeFilter} onValueChange={setTypeFilter}>
