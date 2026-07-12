@@ -1,6 +1,4 @@
-package TransitOps.backend.config;
-
-public class ApiResponse package com.transitops.response;
+package com.transitops.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -44,5 +42,4 @@ public class ApiResponse<T> {
                 .errors(errors)
                 .build();
     }
-}{
 }
