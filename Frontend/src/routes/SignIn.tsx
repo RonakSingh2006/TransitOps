@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createRootRoute, createRoute, useNavigate, Outlet } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -14,13 +14,13 @@ import {
 import { AlertCircle, ShieldCheck, Truck, BarChart3, Route as RouteIcon } from "lucide-react";
 import { useRole, type Role } from "../lib/role-context";
 
-export const Route = createFileRoute()({
-  head: () => ({
-    meta: [
-      { title: "Sign in · TransitOps" },
-      { name: "description", content: "Sign in to TransitOps. One login, four roles." },
-    ],
-  }),
+export const Route = createRootRoute({
+  component: () => <Outlet />,
+});
+
+export const IndexRoute = createRoute({
+  getParentRoute: () => Route,
+  path: "/",
   component: AuthPage,
 });
 
