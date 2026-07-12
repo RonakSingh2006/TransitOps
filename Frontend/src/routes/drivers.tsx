@@ -3,6 +3,8 @@ import { Route as rootRoute } from "./SignIn";
 import { AppLayout, PageHeader } from "../components/app-layout";
 import { Card } from "../components/ui/card";
 import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
 import { StatusPill, type StatusKind } from "../components/status-pill";
 import {
   Table,
@@ -12,6 +14,14 @@ import {
   TableHeader,
   TableRow,
 } from "../components/ui/table";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "../components/ui/dialog";
 import { Plus, ShieldAlert } from "lucide-react";
 import { cn } from "../lib/utils";
 import { useState } from "react";
@@ -50,15 +60,68 @@ const SAFETY_TONE: Record<"green" | "amber" | "gray", string> = {
 
 function DriversPage() {
   const [active, setActive] = useState("Available");
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   return (
     <AppLayout>
       <PageHeader
         title="Drivers & Safety Roster Management"
         subtitle="License validity, safety score and duty state."
         actions={
-          <Button className="h-10">
-            <Plus className="h-4 w-4 mr-1" /> Add Driver
-          </Button>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="h-10">
+                <Plus className="h-4 w-4 mr-1" /> Add Driver
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Add New Driver</DialogTitle>
+                <DialogDescription>
+                  Fill in the driver details below. Trip rate, safety score and status are assigned
+                  dynamically.
+                </DialogDescription>
+              </DialogHeader>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setDialogOpen(false);
+                }}
+                className="space-y-4"
+              >
+                <div className="space-y-1.5">
+                  <Label htmlFor="driver-name">Driver Name</Label>
+                  <Input id="driver-name" placeholder="e.g. Rajesh" required />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="lic-no">License No.</Label>
+                  <Input id="lic-no" placeholder="e.g. DL-12345" required />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="category">Category</Label>
+                  <Input id="category" placeholder="e.g. LMV, HMV" required />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="expiry">License Expiry</Label>
+                  <Input id="expiry" type="month" placeholder="MM/YYYY" required />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="phone">Contact Number</Label>
+                  <Input id="phone" placeholder="e.g. 98765xxxxx" required />
+                </div>
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit">Add Driver</Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
         }
       />
 
